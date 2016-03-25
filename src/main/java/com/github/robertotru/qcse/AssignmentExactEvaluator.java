@@ -1,3 +1,18 @@
+/*
+ * Copyright 2016 Roberto Trunfio <roberto.trunfio@gmail.com>.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.github.robertotru.qcse;
 
 import com.github.robertotru.qcse.input.Assignment;
@@ -13,8 +28,13 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 import static java.lang.StrictMath.max;
+import java.util.Objects;
 import static java.util.Objects.requireNonNull;
 
+/**
+ *
+ * @author Roberto Trunfio <roberto.trunfio@gmail.com>
+ */
 @Slf4j
 public final class AssignmentExactEvaluator {
 
@@ -39,21 +59,24 @@ public final class AssignmentExactEvaluator {
     // MIXED DATA
     private final int[][][][] Delta_i_j_v_w;
     private final int[][] delta_v_w;
-    private final int[] positionMap;
     // SIMULATION DATA
     private final PriorityQueue<Event> eventQueue = new PriorityQueue<>();
     // SIMULATION MODEL DATA
     private final ArrayList<QuayCrane> enabledList;
     private Assignment currentSolution;
-    private int currentTime;
+
     private int task_i, task_j;
+
+    private int currentTime;
+    
+    private final boolean[] completed;
+    private final boolean[] toBePerformed;
+    private final int[] C;
+    private final int[] relatedCrane;
+    
+    private boolean infeasible;
     private boolean precedence_constraint_violated;
     private boolean safety_constraint_violated;
-    private boolean[] completed;
-    private boolean[] toBePerformed;
-    private int[] C;
-    private int[] relatedCrane;
-    private boolean infeasible;
 
     public AssignmentExactEvaluator(final int[] cranes,
                                     final int[] tasks,
@@ -78,8 +101,6 @@ public final class AssignmentExactEvaluator {
 
         this.Tasks = new int[tasks.length];
         System.arraycopy(tasks, 0, this.Tasks, 0, tasks.length);
-
-        positionMap = new int[n];
 
         this.craneInitialPosition = new int[craneInitialPosition.length];
         System.arraycopy(craneInitialPosition, 0, this.craneInitialPosition, 0, craneInitialPosition.length);
@@ -208,7 +229,7 @@ public final class AssignmentExactEvaluator {
         return TasksProcessingTime[i - 1];
     }
 
-    private int l(int i) {
+    public int l(int i) {
         return TasksLocation[i - 1];
     }
 
@@ -240,18 +261,18 @@ public final class AssignmentExactEvaluator {
         return delta_v_w[v - 1][w - 1];
     }
 
-    private final int getC(int task) {
+    private int getC(int task) {
         return C[task - 1];
     }
 
-    private final void setC(int task, int val) {
+    private void setC(int task, int val) {
         C[task - 1] = val;
     }
 
     /*
      * The first element has to control the size;
      */
-    private final void arrangeScheduleExceptFirst(int[] schedule, boolean direction) { // true, from left to right
+    private void arrangeScheduleExceptFirst(int[] schedule, boolean direction) { // true, from left to right
         int size = schedule[0] + 1;
         if (direction) {
             java.util.Arrays.sort(schedule, 1, size);
@@ -328,7 +349,7 @@ public final class AssignmentExactEvaluator {
         eventQueue.add(requireNonNull(event));
     }
 
-    private final boolean endSimCheckUnfeasibility() {
+    private boolean endSimCheckUnfeasibility() {
         int now = now();
         for (final QuayCrane k : cranes) {
             if (!k.isScheduleCompleted() || k.currentCompletionTime() > d(k.id())
@@ -339,7 +360,7 @@ public final class AssignmentExactEvaluator {
         return false;
     }
 
-    private final void checkEnabled() {
+    private void checkEnabled() {
         enabledList.clear();
 
         for (QuayCrane k : cranes) {
@@ -377,7 +398,7 @@ public final class AssignmentExactEvaluator {
         }
     }
 
-    private final boolean selectNext() {
+    private boolean selectNext() {
         int minVal = Integer.MAX_VALUE;
         QuayCrane nextCrane = null;
         int now = now();
@@ -474,7 +495,7 @@ public final class AssignmentExactEvaluator {
                     return -1;
                 }
                 return 1;
-            } else if (t1 == t2) {
+            } else if (Objects.equals(t1, t2)) {
                 return 0;
             } else {
                 return -1;

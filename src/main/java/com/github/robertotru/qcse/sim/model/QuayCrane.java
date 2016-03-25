@@ -1,13 +1,31 @@
+/*
+ * Copyright 2016 Roberto Trunfio <roberto.trunfio@gmail.com>.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.github.robertotru.qcse.sim.model;
 
 
 import com.github.robertotru.qcse.AssignmentExactEvaluator;
-import com.github.robertotru.qcse.InstanceDataContainer;
 import com.github.robertotru.qcse.sim.Event;
 import com.github.robertotru.qcse.sim.Resource;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ *
+ * @author Roberto Trunfio <roberto.trunfio@gmail.com>
+ */
 public class QuayCrane implements Comparable<QuayCrane>, Resource {
 
     private final int id;
@@ -22,50 +40,20 @@ public class QuayCrane implements Comparable<QuayCrane>, Resource {
      */
     double U;
     int minTravelTime;
-    private int releaseTime;
+    private final int releaseTime;
+    
     private int schedule_size;
     private boolean released;
     private boolean scheduleCompleted;
     private boolean working;
     private int currentTask;
-    private AssignmentExactEvaluator assignmentExactEvaluator;
+    private final AssignmentExactEvaluator assignmentExactEvaluator;
 
     public QuayCrane(final int id, final int releaseTime, final int numTasks, final AssignmentExactEvaluator assignmentExactEvaluator) {
         this.assignmentExactEvaluator = assignmentExactEvaluator;
         this.id = id;
         this.releaseTime = releaseTime;
         schedule = new int[numTasks];
-    }
-
-    private static void arrangeSchedule(final int[] schedule, final int size,
-                                        final boolean leftToRight) {
-        if (leftToRight) {
-            java.util.Arrays.sort(schedule, 0, size + 1);
-        } else {
-            for (int i = 0; i < size / 2; i++) {
-                int temp = schedule[size - 1 - i];
-                schedule[size - 1 - i] = schedule[i];
-                schedule[i] = temp;
-            }
-            int to = -1;
-            int loc = InstanceDataContainer.l(schedule[to + 1]);
-            int start = 0;
-            for (int i = 1; i < size; i++) {
-                to++;
-                if (loc != InstanceDataContainer.l(schedule[i])) {
-                    // Riordina i task tra start ed il predecessore di current
-                    if (start < to) {
-                        java.util.Arrays.sort(schedule, start, to + 1);
-                    }
-                    loc = InstanceDataContainer.l(schedule[i]);
-                    start = i;
-                } else if ((loc == InstanceDataContainer.l(schedule[i]) && i == size - 1)) {
-                    if (start < ++to) {
-                        java.util.Arrays.sort(schedule, start, to + 1);
-                    }
-                }
-            }
-        }
     }
 
     public void performCurrentTask(final int time) {
@@ -77,15 +65,8 @@ public class QuayCrane implements Comparable<QuayCrane>, Resource {
         assignmentExactEvaluator.scheduleEvent(event);
     }
 
-    /**
-     * @return
-     */
     public boolean isFirstTask() {
-        if (currentTask == 1) {
-            return true;
-        } else {
-            return false;
-        }
+        return currentTask == 1;
     }
 
     protected void setTaskCompleted() {
@@ -193,7 +174,34 @@ public class QuayCrane implements Comparable<QuayCrane>, Resource {
     }
 
     public void arrangeSchedule(final boolean leftToRight) {
-        arrangeSchedule(schedule, schedule_size, leftToRight);
+        if (leftToRight) {
+            java.util.Arrays.sort(schedule, 0, schedule_size + 1);
+        } else {
+            for (int i = 0; i < schedule_size / 2; i++) {
+                int temp = schedule[schedule_size - 1 - i];
+                schedule[schedule_size - 1 - i] = schedule[i];
+                schedule[i] = temp;
+            }
+            int to = -1;
+            int loc = assignmentExactEvaluator.l(schedule[to + 1]);
+            int start = 0;
+            for (int i = 1; i < schedule_size; i++) {
+                to++;
+                if (loc != assignmentExactEvaluator.l(schedule[i])) {
+                    // Riordina i task tra start ed il predecessore di current
+                    if (start < to) {
+                        java.util.Arrays.sort(schedule, start, to + 1);
+                    }
+                    loc = assignmentExactEvaluator.l(schedule[i]);
+                    start = i;
+                } else if ((loc == assignmentExactEvaluator.l(schedule[i]) 
+                        && i == schedule_size - 1)) {
+                    if (start < ++to) {
+                        java.util.Arrays.sort(schedule, start, to + 1);
+                    }
+                }
+            }
+        }        
     }
 
 }

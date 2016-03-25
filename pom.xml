@@ -102,15 +102,13 @@
         <dependency>
             <groupId>it.ozimov</groupId>
             <artifactId>java8-hamcrest-matchers</artifactId>
-            <version>0.8.1</version>
+            <version>0.10.0</version>
             <scope>test</scope>
         </dependency>
-
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>${junit}</version>
+            <version>4.10</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
