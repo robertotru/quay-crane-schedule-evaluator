@@ -12,3 +12,18 @@
 
 ![codecov.io](https://codecov.io/github/robertotru/quay-crane-schedule-evaluator/branch.svg?branch=master)
 
+## How to get the dependency
+Embed the dependency from Maven
+
+```xml
+<dependency>
+  <groupId>com.github.robertotru</groupId>
+  <artifactId>quay-crane-schedule-evaluator</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
+You can also download the jar from the release tab in _GitHub_.
+
+## How to use
+Create an instance of  `AssignmentExactEvaluator`. The constructor takes all the instance required data (see _Bierwirth and Meisel 2009_ for more details on the adopted notation). Use the method `getMakespan` to compute a makespan for a given task-to-quay crane assignment (embedded in an instance of class `Assignment`).
